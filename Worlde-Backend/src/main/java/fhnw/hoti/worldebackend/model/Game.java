@@ -6,7 +6,6 @@ import lombok.*;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -21,4 +20,16 @@ public class Game {
     private int attempts;
 
     private boolean completed;
+
+    public void setAttempts(int attempts) {
+        if(attempts > 6 || attempts < 1) {
+            this.attempts = 6;
+        } else {
+            this.attempts = attempts;
+        }
+    }
+
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
+    }
 }

@@ -5,9 +5,16 @@ import fhnw.hoti.worldebackend.dto.GuessRequest;
 import fhnw.hoti.worldebackend.dto.GuessResponse;
 import fhnw.hoti.worldebackend.model.Game;
 import fhnw.hoti.worldebackend.repository.GameRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.apache.catalina.connector.InputBuffer;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -17,12 +24,34 @@ public class GameService {
 
     private final GameRepository gameRepository;
 
-    private static final List<String> WORDS = List.of(
-            "APPLE", "HOUSE", "PLANT", "TRAIN", "WATER"
-    );
+    private List<String> words = new ArrayList<>();
+    private final Random random = new Random();
+
+    @PostConstruct
+    private void loadWords() {
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(
+                        new ClassPathResource("words.txt").getInputStream()
+                ))) {
+
+            String line;
+            while ((line = br.readLine()) != null)
+                words.add(line.trim().toUpperCase());
+
+        } catch (IOException e) {
+            throw new RuntimeException("Could not load words", e);
+        }
+    }
+
+
 
     public Game startNewGame() {
-        String word = WORDS.get(new Random().nextInt(WORDS.size()));
+        if (words.isEmpty()) {
+            throw new RuntimeException("Word list is empty!");
+        }
+
+        String word = words.get(random.nextInt(words.size()));
+
         Game game = Game.builder()
                 .solutionWord(word)
                 .attempts(0)
